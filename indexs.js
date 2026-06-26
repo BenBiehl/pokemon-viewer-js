@@ -2,8 +2,20 @@
 const searchInput = document.getElementById("search-input");
 const searchButton = document.getElementById("submit-button");
 const searchResults = document.getElementById("search-results");
+
+const pokemonContainer = document.getElementById("pokemon-container");
 const pokemonImage = document.getElementById("pokemon-image");
+
+const shinyButton = document.getElementById("shiny-button");
+const pokemonName = document.getElementById("pokemon-name");
+const pokemonID = document.getElementById("pokemon-id");
+const pokemonHeight = document.getElementById("pokemon-height");
+const pokemonWeight = document.getElementById("pokemon-weight");
+const pokemonTypes = document.getElementById("pokemon-types");
+
 let allPokemonNames = [];
+let currentPokemon = null;
+let isShiny = false;
 
 // Functions
 async function fetchNames() {
@@ -22,7 +34,7 @@ async function fetchPokemonData(name) {
 
   const data = await response.json();
 
-  return data.sprites.front_default;
+  return data;
 }
 
 async function init() {
@@ -56,10 +68,23 @@ function renderResults(matches) {
 
 // Event Listeners
 searchButton.addEventListener('click', async () => {
-  pokemonImage.src = await fetchPokemonData(searchInput.value);
+  currentPokemon = await fetchPokemonData(searchInput.value);
+  pokemonContainer.style.display = "flex";
+
+  isShiny = false;
+  searchInput.value = "";
+
+  pokemonImage.src = currentPokemon.sprites.front_default;
+  pokemonName.textContent = currentPokemon.name.charAt(0).toUpperCase() + currentPokemon.name.slice(1);
+  pokemonID.textContent = currentPokemon.id;
+  pokemonHeight.textContent = currentPokemon.height;
+  pokemonWeight.textContent = currentPokemon.weight;
+  pokemonTypes.textContent = currentPokemon.types
+    .map(type => type.type.name)
+    .join(", ");
 });
 
-searchInput.addEventListener("input", () => {
+searchInput.addEventListener('input', () => {
   const query = searchInput.value.toLowerCase().trim();
 
   if (!query) {
@@ -72,6 +97,20 @@ searchInput.addEventListener("input", () => {
     .slice(0, 5);
 
   renderResults(matches);
+});
+
+shinyButton.addEventListener('click', () => {
+  if (!currentPokemon) return;
+
+  isShiny = !isShiny;
+
+  if (!isShiny) {
+    shinyButton.textContent = "Shiny Form";
+    pokemonImage.src = currentPokemon.sprites.front_default;
+  } else {
+    shinyButton.textContent = "Normal Form";
+    pokemonImage.src = currentPokemon.sprites.front_shiny;
+  }
 });
 
 init();
