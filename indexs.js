@@ -2,6 +2,7 @@
 const searchInput = document.getElementById("search-input");
 const searchButton = document.getElementById("submit-button");
 const searchResults = document.getElementById("search-results");
+const errorMessage = document.getElementById("error-message");
 
 const pokemonContainer = document.getElementById("pokemon-container");
 const pokemonImage = document.getElementById("pokemon-image");
@@ -68,10 +69,20 @@ function renderResults(matches) {
 
 // Event Listeners
 searchButton.addEventListener('click', async () => {
-  currentPokemon = await fetchPokemonData(searchInput.value);
+  try {
+    currentPokemon = await fetchPokemonData(searchInput.value);
+  } catch (error) {
+    errorMessage.style.display = "block";
+    errorMessage.textContent = `${searchInput.value} is not a valid Pokemon name`;
+    pokemonContainer.style.display = "none";
+    return;
+  }
+  errorMessage.style.display = "none";
+  errorMessage.textContent = "";
   pokemonContainer.style.display = "flex";
 
   isShiny = false;
+  shinyButton.textContent = "Shiny Form";
   searchInput.value = "";
 
   pokemonImage.src = currentPokemon.sprites.front_default;
@@ -83,6 +94,16 @@ searchButton.addEventListener('click', async () => {
     .map(type => type.type.name)
     .join(", ");
 });
+
+document.addEventListener('click', (e) => {
+  if (searchInput.contains(e.target)) {
+    if (searchResults.children.length > 0) {
+      searchResults.style.display = "block";
+    }
+  } else {
+    searchResults.style.display = "none";
+  }
+})
 
 searchInput.addEventListener('input', () => {
   const query = searchInput.value.toLowerCase().trim();
